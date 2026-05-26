@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, Plus, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronLeft, Plus, Check, ChevronDown } from 'lucide-react';
 import { fetchIngredients } from '../services/googleSheets';
 import type { Ingredient } from '../types/product';
-
-const BASE_PRICE = 8000;
 
 const FREE_LIMITS = {
   PROTEIN: 1,
@@ -36,7 +34,12 @@ export function BuilderPage() {
   }, []);
 
   const calculateTotal = () => {
-    let total = BASE_PRICE;
+    let total = 0;
+
+    if (selectedBase) {
+      const baseIng = ingredients.find(i => i.id === selectedBase);
+      total += baseIng?.extraPrice || 0;
+    }
 
     if (selectedProteins.length > FREE_LIMITS.PROTEIN) {
       selectedProteins.slice(FREE_LIMITS.PROTEIN).forEach(id => {
@@ -179,7 +182,9 @@ export function BuilderPage() {
                 
                 let showPrice = false;
                 if (ing.extraPrice > 0) {
-                  if (category === 'PROTEIN') {
+                  if (category === 'BASE') {
+                    showPrice = false;
+                  } else if (category === 'PROTEIN') {
                     showPrice = isSelected 
                       ? selectedProteins.indexOf(ing.id) >= FREE_LIMITS.PROTEIN 
                       : selectedProteins.length >= FREE_LIMITS.PROTEIN;         
@@ -210,7 +215,8 @@ export function BuilderPage() {
                       </span>
                       {showPrice && (
                         <span className="text-[10px] font-black text-brand-text/40">
-                          +{ing.extraPrice.toLocaleString()}
+                          {category === 'BASE' ? '' : '+'}
+                          ${ing.extraPrice.toLocaleString()}
                         </span>
                       )}
                     </div>
