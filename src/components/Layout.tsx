@@ -1,4 +1,5 @@
 import React from 'react';
+import { useCart } from '../context/CartContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Utensils, ShoppingCart } from 'lucide-react';
 
@@ -10,10 +11,10 @@ export function Layout({ children }: LayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const { totalItems } = useCart();
+
   const isMenu = location.pathname === '/' || location.pathname === '/builder';
   const isCart = location.pathname === '/cart';
-
-  const cartCount = 0;
 
   return (
     <div className="mx-auto min-h-screen w-full md:max-w-md bg-brand-bg flex flex-col relative md:shadow-2xl md:border-x md:border-gray-200">
@@ -73,14 +74,14 @@ export function Layout({ children }: LayoutProps) {
               : 'text-gray-400 hover:text-brand-text font-medium'
             }`}
         >
-          {cartCount >= 0 && (
+          {totalItems >= 0 && (
             <div className={`absolute top-1.5 right-[33%] text-[10px] font-black h-5 min-w-[20px] px-1 rounded-full flex items-center justify-center shadow-sm border transition-all duration-300
-              ${cartCount > 0 
+              ${totalItems > 0 
                 ? 'bg-brand-primary text-white border-brand-primary animate-bounce' 
                 : 'bg-gray-100 text-gray-400 border-gray-200'
               }`}
           >
-            {cartCount}
+            {totalItems}
           </div>
           )}
 

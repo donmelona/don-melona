@@ -5,6 +5,7 @@ import { Toast } from '../components/Toast';
 import type { Product, SpecialMeal } from '../types/product';
 import { ChevronLeft, ChevronRight, X, Utensils } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useCart } from '../context/CartContext';
 
 const CATEGORIES = [
     { id: 'TODOS', name: 'Todos', icon: '📋' },
@@ -18,6 +19,9 @@ const CATEGORIES = [
 ];
 
 export function MenuPage() {
+    const { addToCart } = useCart();
+
+
     const [products, setProducts] = useState<Product[]>([]);
     const [specialMeal, setSpecialMeal] = useState<SpecialMeal | null>(null);
     const [loading, setLoading] = useState(true);
@@ -28,12 +32,19 @@ export function MenuPage() {
 
     const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-    const handleAddToCart = (productName: string) => {
-        // Aquí en el futuro irá la lógica de añadir al Context global
-        console.log(`🛒 Añadiendo: ${productName}`);
+    const handleAddToCart = (item: Product | SpecialMeal) => {
 
-        // Mostramos la notificación
-        setToastMessage(`${productName} añadido al pedido`);
+        const safeId = ('id' in item) ? item.id : `special-${item.name.replace(/\s+/g, '-').toLowerCase()}`;
+
+        addToCart({
+            cartItemId: safeId,
+            name: item.name,
+            price: item.price,
+            quantity: 1,
+            image: item.image,
+        });
+
+        setToastMessage(`${item.name} añadido al pedido`);
     };
 
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -166,7 +177,7 @@ export function MenuPage() {
                                 key={product.id}
                                 product={product}
                                 onSelect={(p) => setSelectedProduct(p)}
-                                onAddToCart={(p) => handleAddToCart(p.name)}
+                                onAddToCart={(p) => handleAddToCart(p)}
                             />
                         ))}
                     </div>
@@ -194,7 +205,7 @@ export function MenuPage() {
                             <p className="text-gray-600 text-sm font-medium leading-relaxed">{specialMeal.description}</p>
                             <button
                                 onClick={() => {
-                                    handleAddToCart(specialMeal.name);
+                                    handleAddToCart(specialMeal);
                                     setIsSpecialModalOpen(false);
                                 }}
                                 className="w-full bg-brand-primary text-white p-4 rounded-2xl font-black flex items-center justify-between shadow-lg shadow-orange-200 active:scale-[0.98] transition-all"
@@ -249,7 +260,7 @@ export function MenuPage() {
 
                             <button
                                 onClick={() => {
-                                    handleAddToCart(selectedProduct.name); // 👈 Usamos la función que creaste
+                                    handleAddToCart(selectedProduct);
                                     setSelectedProduct(null);
                                 }}
                                 className="w-full bg-brand-primary text-white p-4 rounded-2xl font-black flex items-center justify-between shadow-lg shadow-orange-200 active:scale-[0.98] transition-all shrink-0"
