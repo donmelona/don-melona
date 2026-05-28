@@ -40,3 +40,10 @@ export interface CartItem {
   quantity: number;
   totalPrice: number;
 }
+
+export interface StoreSchedule {
+  dia: string;
+  horaInicio: string;
+  horaFin: string;
+  cerrado: string;
+}

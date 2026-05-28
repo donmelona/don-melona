@@ -1,11 +1,13 @@
 import Papa from 'papaparse';
-import type { Product, SpecialMeal, Ingredient, IngredientCategory } from '../types/product';
+import type { Product, SpecialMeal, Ingredient, IngredientCategory, StoreSchedule } from '../types/product';
 
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSf-ehQbxC87zfQkwQlhQ_SXiMzFiKmxZ3amTS1zV6oPJiP2GPhSh3g8zUXtsgqiW9fkkpoFmFC6zCo/pub?gid=0&single=true&output=csv';
 
 const SPECIAL_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSf-ehQbxC87zfQkwQlhQ_SXiMzFiKmxZ3amTS1zV6oPJiP2GPhSh3g8zUXtsgqiW9fkkpoFmFC6zCo/pub?gid=1183394839&single=true&output=csv';
 
 const INGREDIENTS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSf-ehQbxC87zfQkwQlhQ_SXiMzFiKmxZ3amTS1zV6oPJiP2GPhSh3g8zUXtsgqiW9fkkpoFmFC6zCo/pub?gid=500777&single=true&output=csv';
+
+const SCHEDULE_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSf-ehQbxC87zfQkwQlhQ_SXiMzFiKmxZ3amTS1zV6oPJiP2GPhSh3g8zUXtsgqiW9fkkpoFmFC6zCo/pub?gid=1757918505&single=true&output=csv';
 
 export async function fetchProducts(): Promise<Product[]> {
     try {
@@ -186,4 +188,40 @@ export async function fetchIngredients(): Promise<Ingredient[]> {
         console.error('Error:', error);
         return [];
     }
+}
+
+export async function fetchSchedule(): Promise<StoreSchedule[]> {
+  try {
+    const response = await fetch(SCHEDULE_CSV_URL);
+    
+    if (!response.ok) {
+      throw new Error("No se pudo conectar con la hoja de horarios");
+    }
+    
+    const text = await response.text();
+    
+    const lines = text.split("\n");
+    
+    const dataLines = lines.slice(1);
+    
+    const schedule: StoreSchedule[] = dataLines
+      .map(line => {
+        const columns = line.split(",");
+        
+        if (columns.length < 4 || !columns[0]) return null;
+        
+        return {
+          dia: columns[0].replace(/"/g, "").trim(),
+          horaInicio: columns[1].replace(/"/g, "").trim(),
+          horaFin: columns[2].replace(/"/g, "").trim(),
+          cerrado: columns[3].replace(/"/g, "").trim()
+        };
+      })
+      .filter((item): item is StoreSchedule => item !== null);
+
+    return schedule;
+  } catch (error) {
+    console.error("Error en fetchSchedule:", error);
+    return [];
+  }
 }

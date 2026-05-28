@@ -2,6 +2,7 @@ import React from 'react';
 import { useCart } from '../context/CartContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Utensils, ShoppingCart } from 'lucide-react';
+import { useStoreStatus } from '../hooks/useStoreStatus';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -15,6 +16,8 @@ export function Layout({ children }: LayoutProps) {
 
   const isMenu = location.pathname === '/' || location.pathname === '/builder';
   const isCart = location.pathname === '/cart';
+
+  const { isOpen, loading } = useStoreStatus();
 
   return (
     <div className="mx-auto min-h-screen w-full md:max-w-md bg-brand-bg flex flex-col relative md:shadow-2xl md:border-x md:border-gray-200">
@@ -37,9 +40,22 @@ export function Layout({ children }: LayoutProps) {
             </p>
           </div>
         </div>
+        <div className="flex items-center gap-2">
+      {loading ? (
+        // Un marcador de posición gris mientras lee la respuesta de Google Sheets
+        <div className="bg-gray-100 text-gray-400 text-xs font-bold px-3 py-1 rounded-full border border-gray-200">
+          Verificando...
+        </div>
+      ) : isOpen ? (
         <div className="bg-brand-accent/10 text-brand-accent text-xs font-bold px-3 py-1 rounded-full animate-pulse border border-brand-accent/20">
           Abierto
         </div>
+      ) : (
+        <div className="bg-red-50 text-red-500 text-xs font-bold px-3 py-1 rounded-full border border-red-100">
+          Cerrado
+        </div>
+      )}
+    </div>
       </header>
 
       <main className="flex-1 p-4 pb-28">
