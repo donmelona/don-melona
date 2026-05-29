@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Product } from '../types/product';
+
+const ADD_HIGHLIGHT_MS = 250;
 
 const CATEGORY_ICONS: Record<string, string> = {
   PICADAS: '🥗',
@@ -19,7 +21,21 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onSelect, onAddToCart }: ProductCardProps) {
-  const [imgError, setImgError] = useState(false); 
+  const [imgError, setImgError] = useState(false);
+  const [isAddHighlighted, setIsAddHighlighted] = useState(false);
+  const highlightTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  useEffect(() => () => {
+    if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current);
+  }, []);
+
+  const handleAddClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsAddHighlighted(true);
+    onAddToCart(product);
+    if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current);
+    highlightTimeoutRef.current = setTimeout(() => setIsAddHighlighted(false), ADD_HIGHLIGHT_MS);
+  };
   
   const priceFormatted = product.price ? product.price.toLocaleString() : '0';
   const isImageUrl = product.image?.startsWith('http://') || product.image?.startsWith('https://');
@@ -58,12 +74,11 @@ export function ProductCard({ product, onSelect, onAddToCart }: ProductCardProps
             ${priceFormatted}
           </span>
           <button 
-            onClick={(e) => {
-                e.stopPropagation();
-                onAddToCart(product);
-            }}
-            className="bg-gray-100 text-brand-text text-xs font-black px-4 py-2 rounded-lg hover:bg-brand-primary hover:text-white transition-colors shadow-sm"
-            >
+            onClick={handleAddClick}
+            className={`text-xs font-black px-4 py-2 rounded-lg transition-colors shadow-sm active:bg-brand-primary active:text-white hover:bg-brand-primary hover:text-white ${
+              isAddHighlighted ? 'bg-brand-primary text-white' : 'bg-gray-100 text-brand-text'
+            }`}
+          >
             Añadir
           </button>
         </div>
