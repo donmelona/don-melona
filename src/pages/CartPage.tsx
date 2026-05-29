@@ -36,6 +36,7 @@ export function CartPage() {
     const textoCodificado = encodeURIComponent(completoMensaje);
 
     window.open(`https://wa.me/${phone}?text=${textoCodificado}`, '_blank');
+    clearCart();
   };
 
   if (items.length === 0) {

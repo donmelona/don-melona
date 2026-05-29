@@ -1,5 +1,18 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
+
+const CART_STORAGE_KEY = 'don-melona-cart';
+
+function loadCartFromStorage(): CartItem[] {
+    try {
+        const stored = localStorage.getItem(CART_STORAGE_KEY);
+        if (stored) {
+            return JSON.parse(stored) as CartItem[];
+        }
+    } catch {
+    }
+    return [];
+}
 
 export interface CartItem {
     cartItemId: string;
@@ -23,7 +36,11 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
-    const [items, setItems] = useState<CartItem[]>([]);
+    const [items, setItems] = useState<CartItem[]>(loadCartFromStorage);
+
+    useEffect(() => {
+        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+    }, [items]);
 
     const updateQuantity = (cartItemId: string, amount: number) => {
         setItems(prev => prev.map(item => 
