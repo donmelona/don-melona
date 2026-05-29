@@ -1,73 +1,82 @@
-import { useEffect, useState } from 'react';
-import { CheckCircle2, Trash2, X } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Check, Minus } from 'lucide-react';
 
 export type ToastVariant = 'success' | 'remove';
 
+const EXIT_MS = 280;
+
 interface ToastProps {
   message: string;
-  isVisible: boolean;
-  onClose: () => void;
   variant?: ToastVariant;
+  duration: number;
+  elevated?: boolean;
+  onClose: () => void;
 }
 
-export function Toast({ message, isVisible, onClose, variant = 'success' }: ToastProps) {
+function parseMessage(message: string) {
+  const parts = message.split(' — ');
+  if (parts.length >= 2) {
+    return { title: parts[0], detail: parts.slice(1).join(' — ') };
+  }
+  return { title: message, detail: null as string | null };
+}
+
+export function Toast({ message, variant = 'success', duration, elevated = false, onClose }: ToastProps) {
   const isRemove = variant === 'remove';
+  const { title, detail } = parseMessage(message);
+  const [visible, setVisible] = useState(false);
+  const exitTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  const [shouldRender, setShouldRender] = useState(isVisible);
-  const [animate, setAnimate] = useState(false);
-
-  useEffect(() => {
-    if (isVisible) {
-      setShouldRender(true);
-      const timer = setTimeout(() => setAnimate(true), 10);
-      return () => clearTimeout(timer);
-    }
-    setAnimate(false);
-    const timer = setTimeout(() => setShouldRender(false), 300);
-    return () => clearTimeout(timer);
-  }, [isVisible]);
+  const dismiss = useCallback(() => {
+    setVisible(false);
+    if (exitTimerRef.current) clearTimeout(exitTimerRef.current);
+    exitTimerRef.current = setTimeout(onClose, EXIT_MS);
+  }, [onClose]);
 
   useEffect(() => {
-    if (isVisible) {
-      const timer = setTimeout(() => {
-        onClose();
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [isVisible, onClose]);
+    const enterTimer = setTimeout(() => setVisible(true), 16);
+    const autoDismissTimer = setTimeout(dismiss, duration);
 
-  if (!shouldRender) return null;
+    return () => {
+      clearTimeout(enterTimer);
+      clearTimeout(autoDismissTimer);
+      if (exitTimerRef.current) clearTimeout(exitTimerRef.current);
+    };
+  }, [duration, dismiss]);
 
   return (
-    <div 
-      className={`fixed top-5 md:top-5 left-1/2 -translate-x-1/2 z-[200] px-4 w-full max-w-sm 
-                  transition-all duration-300 ease-out transform
-                  ${animate 
-                    ? 'opacity-100 translate-y-0 scale-100'
-                    : 'opacity-0 -translate-y-12 scale-95 pointer-events-none'
-                  }`}
+    <div
+      className={`toast-host${elevated ? ' toast-host--elevated' : ''}`}
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
     >
-      <div className={`${isRemove ? 'toast-remove border-red-200' : 'toast-success border-brand-accent/25'} bg-white/95 backdrop-blur-md text-brand-text px-4 py-3.5 rounded-2xl flex items-center justify-between gap-3 border`}>
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <div className={`shrink-0 w-9 h-9 rounded-full flex items-center justify-center ${isRemove ? 'bg-red-50' : 'bg-brand-accent/15'}`}>
-            {isRemove ? (
-              <Trash2 size={18} className="text-red-500" strokeWidth={2.5} />
-            ) : (
-              <CheckCircle2 size={20} className="text-brand-accent" strokeWidth={2.5} />
-            )}
-          </div>
-          <span className="text-sm font-bold leading-tight truncate">
-            {message}
-          </span>
+      <button
+        type="button"
+        onClick={dismiss}
+        className={`toast-snackbar toast-snackbar--${variant} ${visible ? 'toast-snackbar--visible' : ''}`}
+      >
+        <div className="toast-snackbar__accent" aria-hidden="true" />
+
+        <div className={`toast-snackbar__icon ${isRemove ? 'toast-snackbar__icon--remove' : ''}`}>
+          {isRemove ? <Minus size={16} strokeWidth={3} /> : <Check size={16} strokeWidth={3} />}
         </div>
-        <button 
-          onClick={onClose}
-          className={`text-brand-text/35 hover:text-brand-text/60 transition-colors active:scale-90 p-1.5 shrink-0 rounded-full ${isRemove ? 'bg-red-50 hover:bg-red-100' : 'bg-brand-accent/10 hover:bg-brand-accent/15'}`}
-          aria-label="Cerrar notificación"
-        >
-          <X size={14} strokeWidth={3} />
-        </button>
-      </div>
+
+        <div className="toast-snackbar__body">
+          <span className="toast-snackbar__label">
+            {isRemove ? 'Eliminado' : 'Listo'}
+          </span>
+          <p className="toast-snackbar__title">{title}</p>
+          {detail && <p className="toast-snackbar__detail">{detail}</p>}
+        </div>
+
+        <div className="toast-snackbar__progress-track" aria-hidden="true">
+          <div
+            className="toast-snackbar__progress-bar"
+            style={{ animationDuration: `${duration}ms` }}
+          />
+        </div>
+      </button>
     </div>
   );
 }

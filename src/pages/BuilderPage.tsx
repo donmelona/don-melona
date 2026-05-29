@@ -4,7 +4,7 @@ import { ChevronLeft, Plus, Check, ChevronDown } from 'lucide-react';
 import { fetchIngredients } from '../services/googleSheets';
 import type { Ingredient } from '../types/product';
 import { useCart } from '../context/CartContext';
-import { Toast } from '../components/Toast';
+import { useToast } from '../context/ToastContext';
 
 const FREE_LIMITS = {
     PROTEIN: 1,
@@ -27,9 +27,8 @@ export function BuilderPage() {
     const [selectedToppings, setSelectedToppings] = useState<string[]>([]);
     const [selectedSauces, setSelectedSauces] = useState<string[]>([]);
 
-    const [toastMessage, setToastMessage] = useState<string | null>(null);
-
     const { addToCart } = useCart();
+    const { showToast } = useToast();
 
     useEffect(() => {
         async function load() {
@@ -137,7 +136,7 @@ export function BuilderPage() {
             image: getBaseIcon(baseName)
         });
 
-        setToastMessage("¡Tu Melona personalizada fue añadida!");
+        showToast('Tu Melona — añadida al pedido');
 
         setSelectedBase(null);
         setSelectedProteins([]);
@@ -354,11 +353,6 @@ export function BuilderPage() {
                 </button>
             </div>
 
-            <Toast
-                isVisible={toastMessage !== null}
-                message={toastMessage || ''}
-                onClose={() => setToastMessage(null)}
-            />
         </div>
     );
 }

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useCart } from '../context/CartContext';
+import { ToastProvider } from '../context/ToastContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Utensils, ShoppingCart } from 'lucide-react';
 import { useStoreStatus } from '../hooks/useStoreStatus';
@@ -20,6 +21,7 @@ export function Layout({ children }: LayoutProps) {
   const { isOpen, loading } = useStoreStatus();
 
   return (
+    <ToastProvider>
     <div className="mx-auto h-full w-full md:max-w-md bg-brand-bg flex flex-col relative md:shadow-2xl md:border-x md:border-gray-200 overflow-hidden">
       
       <header className="shrink-0 z-50 bg-brand-bg/95 backdrop-blur-md p-4 border-b border-gray-100 flex items-center justify-between shadow-sm">
@@ -112,5 +114,6 @@ export function Layout({ children }: LayoutProps) {
         </div>
       </nav>
     </div>
+    </ToastProvider>
   );
 }

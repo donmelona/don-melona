@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { fetchProducts, fetchSpecialMeal } from '../services/googleSheets';
 import { ProductCard } from '../components/ProductCard';
-import { Toast } from '../components/Toast';
 import type { Product, SpecialMeal } from '../types/product';
 import { ChevronLeft, ChevronRight, X, Utensils } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useToast } from '../context/ToastContext';
 
 const CATEGORIES = [
     { id: 'TODOS', name: 'Todos', icon: '📋' },
@@ -20,7 +20,7 @@ const CATEGORIES = [
 
 export function MenuPage() {
     const { addToCart } = useCart();
-
+    const { showToast } = useToast();
 
     const [products, setProducts] = useState<Product[]>([]);
     const [specialMeal, setSpecialMeal] = useState<SpecialMeal | null>(null);
@@ -29,8 +29,6 @@ export function MenuPage() {
 
     const [isSpecialModalOpen, setIsSpecialModalOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-
-    const [toastMessage, setToastMessage] = useState<string | null>(null);
 
     const handleAddToCart = useCallback((item: Product | SpecialMeal) => {
         const safeId = ('id' in item) ? item.id : `special-${item.name.replace(/\s+/g, '-').toLowerCase()}`;
@@ -43,8 +41,8 @@ export function MenuPage() {
             image: item.image,
         });
 
-        setToastMessage(`${item.name} añadido al pedido`);
-    }, [addToCart]);
+        showToast(`${item.name} — añadido al pedido`);
+    }, [addToCart, showToast]);
 
     const handleSelectProduct = useCallback((product: Product) => {
         setSelectedProduct(product);
@@ -275,11 +273,6 @@ export function MenuPage() {
                     </div>
                 </div>
             )}
-            <Toast
-                isVisible={toastMessage !== null}
-                message={toastMessage || ''}
-                onClose={() => setToastMessage(null)}
-            />
         </div>
     );
 }
