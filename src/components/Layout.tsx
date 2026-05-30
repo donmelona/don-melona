@@ -92,7 +92,7 @@ export function Layout({ children }: LayoutProps) {
               : 'text-gray-400 hover:text-brand-text font-medium'
             }`}
         >
-          {totalItems >= 0 && (
+          {totalItems > 0 && (
             <div className={`absolute top-1.5 right-[33%] text-[10px] font-black h-5 min-w-[20px] px-1 rounded-full flex items-center justify-center shadow-sm border transition-all duration-300
               ${totalItems > 0 
                 ? 'bg-brand-primary text-white border-brand-primary animate-bounce' 
