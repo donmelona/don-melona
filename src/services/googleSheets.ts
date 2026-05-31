@@ -211,10 +211,10 @@ export async function fetchSchedule(): Promise<StoreSchedule[]> {
 
           const schedule: StoreSchedule[] = rawData
             .map((data: any) => ({
-              dia: (data.dia || data.Dia || '').trim(),
-              horaInicio: (data.horaInicio || data['Hora Inicio'] || data.HoraInicio || '').trim(),
-              horaFin: (data.horaFin || data['Hora Fin'] || data.HoraFin || '').trim(),
-              cerrado: (data.cerrado || data.Cerrado || '').trim()
+              dia: (data['Día'] || data.Día || data.dia || data.Dia || '').trim(),
+              horaInicio: (data['Hora Inicio'] || data.HoraInicio || data.horaInicio || '').trim(),
+              horaFin: (data['Hora Fin'] || data.HoraFin || data.horaFin || '').trim(),
+              cerrado: (data['Cerrado?'] || data.Cerrado || data.cerrado || '').trim()
             }))
             .filter(row => row.dia !== '');
 

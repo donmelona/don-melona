@@ -10,6 +10,47 @@ export interface StoreSchedule {
 
 const DAYS_MAP = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
+const WEEKDAY_INDEX: Record<string, number> = {
+  Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6,
+};
+
+function getBogotaNow() {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Bogota',
+    weekday: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(new Date());
+
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((p) => p.type === type)?.value ?? '0';
+
+  return {
+    dayIndex: WEEKDAY_INDEX[get('weekday')] ?? 0,
+    hour: parseInt(get('hour'), 10),
+    minute: parseInt(get('minute'), 10),
+  };
+}
+
+function normalizeDayName(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
+function isMarkedClosed(cerrado: string): boolean {
+  const normalized = cerrado
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+
+  return ['si', 's', 'yes', 'true', '1', 'verdadero', 'cerrado'].includes(normalized);
+}
+
 export function useStoreStatus() {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -18,20 +59,16 @@ export function useStoreStatus() {
     async function checkStatus() {
       try {
         const scheduleData: StoreSchedule[] = await fetchSchedule();
-        
-        const now = new Date();
-        const localTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Bogota" }));
-        
-        const currentDayName = DAYS_MAP[localTime.getDay()];
-        const currentHour = localTime.getHours();
-        const currentMinute = localTime.getMinutes();
-        const currentTimeInMinutes = currentHour * 60 + currentMinute;
+
+        const { dayIndex, hour, minute } = getBogotaNow();
+        const currentDayName = DAYS_MAP[dayIndex];
+        const currentTimeInMinutes = hour * 60 + minute;
 
         const todayConfig = scheduleData.find(
-          item => item.dia.trim().toLowerCase() === currentDayName.toLowerCase()
+          (item) => normalizeDayName(item.dia) === normalizeDayName(currentDayName)
         );
 
-        if (!todayConfig || todayConfig.cerrado.trim().toLowerCase() === 'sí') {
+        if (!todayConfig || isMarkedClosed(todayConfig.cerrado)) {
           setIsOpen(false);
           return;
         }
