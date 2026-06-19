@@ -100,13 +100,13 @@ export function MenuPage() {
 
             <div
                 onClick={() => navigate('/builder')}
-                className="bg-gradient-to-br from-brand-primary to-orange-600 rounded-3xl p-6 shadow-[0_8px_20px_-6px_rgba(249,115,22,0.5)] relative overflow-hidden active:scale-[0.98] transition-transform cursor-pointer border-b-4 border-orange-700"
+                className="bg-gradient-to-br from-brand-primary to-orange-600 rounded-3xl p-6 shadow-[0_8px_20px_-6px_rgba(249,115,22,0.5)] relative overflow-hidden active:scale-[0.98] transition-transform cursor-pointer border-b-4 border-orange-700 hover:brightness-110"
             >
                 <div className="relative z-10">
-                    <span className="bg-brand-nav text-brand-text text-[10px] font-black uppercase px-2 py-1 rounded-md mb-2 inline-block shadow-sm">El Plato Estrella</span>
+                    <span className="bg-white/15 text-white/90 text-[10px] font-bold uppercase px-2 py-1 rounded-md mb-2 inline-block">El Plato Estrella</span>
                     <h2 className="text-3xl font-black italic text-white drop-shadow-md leading-none mt-1">¡Arma tu<br />Melona!</h2>
-                    <p className="mt-3 flex items-center gap-1 text-white/85 text-sm font-bold">
-                        Toca para armar
+                    <p className="mt-3 inline-flex items-center gap-1 bg-brand-nav text-brand-text text-xs font-black uppercase px-3 py-1.5 rounded-lg shadow-md">
+                        Toca aquí para comenzar
                         <ChevronRight size={16} strokeWidth={3} className="animate-bounce-x" />
                     </p>
                 </div>
