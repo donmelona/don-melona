@@ -105,6 +105,10 @@ export function MenuPage() {
                 <div className="relative z-10">
                     <span className="bg-brand-nav text-brand-text text-[10px] font-black uppercase px-2 py-1 rounded-md mb-2 inline-block shadow-sm">El Plato Estrella</span>
                     <h2 className="text-3xl font-black italic text-white drop-shadow-md leading-none mt-1">¡Arma tu<br />Melona!</h2>
+                    <p className="mt-3 flex items-center gap-1 text-white/85 text-sm font-bold">
+                        Toca para armar
+                        <ChevronRight size={16} strokeWidth={3} className="animate-bounce-x" />
+                    </p>
                 </div>
                 <span className="absolute -bottom-6 -right-4 text-9xl opacity-20 rotate-12 drop-shadow-2xl">🍔</span>
             </div>
