@@ -116,29 +116,30 @@ export function MenuPage() {
             {specialMeal && (
                 <div
                     onClick={() => setIsSpecialModalOpen(true)}
-                    className="bg-white border border-gray-100 rounded-2xl p-3 shadow-sm active:scale-[0.98] transition-all cursor-pointer flex items-center gap-4 hover:border-orange-200"
+                    className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-2 border-l-[5px] border-brand-primary shadow-sm active:scale-[0.98] transition-all cursor-pointer flex items-center gap-4 hover:shadow-md"
                 >
                     {specialMeal.image ? (
                         <img
                             src={specialMeal.image}
                             alt={specialMeal.name}
-                            className="w-16 h-16 rounded-xl object-cover border border-gray-100 shadow-sm shrink-0"
+                            className="w-20 h-20 rounded-xl object-cover border-[3px] border-white shadow-md shrink-0"
                         />
                     ) : (
-                        <div className="w-16 h-16 bg-orange-50 rounded-xl flex items-center justify-center text-brand-primary shrink-0">
+                        <div className="w-20 h-20 bg-gradient-to-br from-brand-primary to-orange-400 rounded-xl flex items-center justify-center text-white shrink-0 shadow-md">
                             <Utensils size={24} />
                         </div>
                     )}
 
-                    <div className="flex flex-col flex-1">
-                        <span className="text-[10px] text-brand-primary font-black uppercase tracking-wider mb-0.5">Especial del Día</span>
-                        <h3 className="font-black text-brand-text text-sm leading-tight line-clamp-1">{specialMeal.name}</h3>
-                        <span className="font-black text-brand-text text-sm mt-1">${specialMeal.price.toLocaleString()}</span>
-                    </div>
-
-                    <div className="pr-2">
-                        <div className="w-8 h-8 rounded-full bg-brand-primary text-white flex items-center justify-center font-black shadow-md">
-                            +
+                    <div className="flex-1 min-w-0">
+                        <span className="inline-flex items-center gap-1 text-[10px] text-white font-black uppercase tracking-wider px-2 py-1 rounded-md bg-brand-primary shadow-sm mb-1.5">
+                            Especial del Día
+                        </span>
+                        <h3 className="font-black text-brand-text text-base leading-tight line-clamp-1">{specialMeal.name}</h3>
+                        <div className="flex items-center justify-between mt-1.5">
+                            <span className="font-black text-brand-text text-lg">${specialMeal.price.toLocaleString()}</span>
+                            <div className="w-9 h-9 rounded-full bg-brand-primary text-white flex items-center justify-center font-black shadow-md shadow-orange-200 text-lg active:scale-90 transition-transform leading-none pb-0.5">
+                                +
+                            </div>
                         </div>
                     </div>
                 </div>
