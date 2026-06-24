@@ -18,11 +18,14 @@ export interface Product {
   isAvailable: boolean;
 }
 
+export type SpecialMealType = 'promo' | 'dia';
+
 export interface SpecialMeal {
   name: string;
   description: string;
   price: number;
   image: string;
+  type: SpecialMealType;
   isActive: boolean;
   startDate: Date | null;
   endDate: Date | null;

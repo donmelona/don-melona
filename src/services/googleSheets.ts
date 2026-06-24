@@ -81,7 +81,7 @@ function parseSheetDate(dateStr: string): Date | null {
     return null;
 }
 
-export async function fetchSpecialMeal(): Promise<SpecialMeal | null> {
+export async function fetchSpecialMeal(): Promise<SpecialMeal[]> {
     try {
         const response = await fetch(SPECIAL_CSV_URL);
         if (!response.ok) throw new Error('Error al conectar con la pestaña Especiales');
@@ -94,36 +94,44 @@ export async function fetchSpecialMeal(): Promise<SpecialMeal | null> {
                 skipEmptyLines: true,
                 complete: (results: Papa.ParseResult<any>) => {
                     const rawData = results.data as any[];
-                    if (rawData.length === 0) {
-                        resolve(null);
-                        return;
-                    }
 
-                    // Solo nos interesa la primera fila (el almuerzo activo)
-                    const data = rawData[0];
-                    
-                    const isActive = ['SÍ', 'TRUE', '1', 'VERDADERO'].includes(
-                        String(data.Activo || data.activo || '').toUpperCase().trim()
-                    );
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
 
-                    const special: SpecialMeal = {
-                        name: (data.Nombre || data.nombre || '').trim(),
-                        description: (data.Descripcion || data.Descripción || '').trim(),
-                        price: parseInt(String(data.Precio || '0').replace(/[^0-9]/g, ''), 10) || 0,
-                        image: (data.Imagen || data.imagen || '').trim(),
-                        isActive: isActive,
-                        startDate: parseSheetDate(data['Fecha Inicio'] || data.FechaInicio || ''),
-                        endDate: parseSheetDate(data['Fecha Fin'] || data.FechaFin || '')
-                    };
+                    const meals: SpecialMeal[] = rawData
+                        .filter(row => {
+                            const isActive = ['SÍ', 'TRUE', '1', 'VERDADERO'].includes(
+                                String(row.Activo || row.activo || '').toUpperCase().trim()
+                            );
+                            if (!isActive) return false;
 
-                    resolve(special);
+                            const startDate = parseSheetDate(row['Fecha Inicio'] || row.FechaInicio || '');
+                            const endDate = parseSheetDate(row['Fecha Fin'] || row.FechaFin || '');
+
+                            const afterStart = !startDate || today >= startDate;
+                            const beforeEnd = !endDate || today <= endDate;
+
+                            return afterStart && beforeEnd;
+                        })
+                        .map(row => ({
+                            name: (row.Nombre || row.nombre || '').trim(),
+                            description: (row.Descripcion || row.Descripción || '').trim(),
+                            price: parseInt(String(row.Precio || '0').replace(/[^0-9]/g, ''), 10) || 0,
+                            image: (row.Imagen || row.imagen || '').trim(),
+                            type: ((row.Tipo || row.tipo || '').trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, '') === 'dia' ? 'dia' : 'promo') as SpecialMealType,
+                            isActive: true,
+                            startDate: parseSheetDate(row['Fecha Inicio'] || row.FechaInicio || ''),
+                            endDate: parseSheetDate(row['Fecha Fin'] || row.FechaFin || '')
+                        }));
+
+                    resolve(meals);
                 },
                 error: (error: Error) => reject(error)
             });
         });
     } catch (error) {
         console.error('Error fetching special meal:', error);
-        return null;
+        return [];
     }
 }
 

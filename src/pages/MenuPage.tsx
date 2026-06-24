@@ -23,11 +23,11 @@ export function MenuPage() {
     const { showToast } = useToast();
 
     const [products, setProducts] = useState<Product[]>([]);
-    const [specialMeal, setSpecialMeal] = useState<SpecialMeal | null>(null);
+    const [specialMeals, setSpecialMeals] = useState<SpecialMeal[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeCategory, setActiveCategory] = useState('TODOS');
 
-    const [isSpecialModalOpen, setIsSpecialModalOpen] = useState(false);
+    const [selectedSpecialItem, setSelectedSpecialItem] = useState<SpecialMeal | null>(null);
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
     const handleAddToCart = useCallback((item: Product | SpecialMeal) => {
@@ -55,25 +55,13 @@ export function MenuPage() {
 
     useEffect(() => {
         async function loadData() {
-            const [data, specialData] = await Promise.all([
+            const [data, meals] = await Promise.all([
                 fetchProducts(),
                 fetchSpecialMeal()
             ]);
 
             setProducts(data.filter(p => p.isAvailable));
-
-            if (specialData && specialData.isActive) {
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-
-                const afterStart = !specialData.startDate || today >= specialData.startDate;
-                const beforeEnd = !specialData.endDate || today <= specialData.endDate;
-
-                if (afterStart && beforeEnd) {
-                    setSpecialMeal(specialData);
-                }
-            }
-
+            setSpecialMeals(meals);
             setLoading(false);
         }
         loadData();
@@ -113,15 +101,16 @@ export function MenuPage() {
                 <span className="absolute -bottom-6 -right-4 text-9xl opacity-20 rotate-12 drop-shadow-2xl">🍔</span>
             </div>
 
-            {specialMeal && (
+            {specialMeals.length > 0 && specialMeals.map((meal) => (
                 <div
-                    onClick={() => setIsSpecialModalOpen(true)}
+                    key={meal.name}
+                    onClick={() => setSelectedSpecialItem(meal)}
                     className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-2 border-l-[5px] border-brand-primary shadow-sm active:scale-[0.98] transition-all cursor-pointer flex items-center gap-4 hover:shadow-md"
                 >
-                    {specialMeal.image ? (
+                    {meal.image ? (
                         <img
-                            src={specialMeal.image}
-                            alt={specialMeal.name}
+                            src={meal.image}
+                            alt={meal.name}
                             className="w-20 h-20 rounded-xl object-cover border-[3px] border-white shadow-md shrink-0"
                         />
                     ) : (
@@ -132,18 +121,18 @@ export function MenuPage() {
 
                     <div className="flex-1 min-w-0">
                         <span className="inline-flex items-center gap-1 text-[10px] text-white font-black uppercase tracking-wider px-2 py-1 rounded-md bg-brand-primary shadow-sm mb-1.5">
-                            Especial del Día
+                            {meal.type === 'promo' ? 'Promo' : 'Menú del Día'}
                         </span>
-                        <h3 className="font-black text-brand-text text-base leading-tight line-clamp-1">{specialMeal.name}</h3>
+                        <h3 className="font-black text-brand-text text-base leading-tight line-clamp-1">{meal.name}</h3>
                         <div className="flex items-center justify-between mt-1.5">
-                            <span className="font-black text-brand-text text-lg">${specialMeal.price.toLocaleString()}</span>
+                            <span className="font-black text-brand-text text-lg">${meal.price.toLocaleString()}</span>
                             <div className="w-9 h-9 rounded-full bg-brand-primary text-white flex items-center justify-center font-black shadow-md shadow-orange-200 text-lg active:scale-90 transition-transform leading-none pb-0.5">
                                 +
                             </div>
                         </div>
                     </div>
                 </div>
-            )}
+            ))}
 
             <div className="flex items-center gap-2">
                 <button onClick={() => scroll('left')} className="hidden md:flex p-2 bg-white rounded-full shadow-sm text-gray-500 hover:text-brand-primary border border-gray-200">
@@ -194,32 +183,40 @@ export function MenuPage() {
                 )}
             </div>
 
-            {isSpecialModalOpen && specialMeal && (
+            {selectedSpecialItem && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={() => setIsSpecialModalOpen(false)}></div>
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={() => setSelectedSpecialItem(null)}></div>
                     <div className="relative bg-white w-full md:max-w-md rounded-[2rem] overflow-hidden shadow-2xl z-10 animate-in slide-in-from-bottom-8 fade-in duration-300">
-                        <button onClick={() => setIsSpecialModalOpen(false)} className="absolute top-4 right-4 z-20 bg-black/50 text-white p-2 rounded-full backdrop-blur-md hover:bg-black/70 active:scale-90 transition-all">
+                        <button onClick={() => setSelectedSpecialItem(null)} className="absolute top-4 right-4 z-20 bg-black/50 text-white p-2 rounded-full backdrop-blur-md hover:bg-black/70 active:scale-90 transition-all">
                             <X size={20} strokeWidth={3} />
                         </button>
                         <div className="w-full h-64 bg-gray-100 relative">
-                            <img src={specialMeal.image} alt={specialMeal.name} className="w-full h-full object-cover" />
+                            {selectedSpecialItem.image ? (
+                                <img src={selectedSpecialItem.image} alt={selectedSpecialItem.name} className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="w-full h-full bg-gradient-to-br from-brand-primary to-orange-400 flex items-center justify-center">
+                                    <Utensils size={48} className="text-white/30" />
+                                </div>
+                            )}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
                             <div className="absolute bottom-4 left-4 right-4">
-                                <span className="bg-brand-primary text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">Recomendado</span>
-                                <h2 className="text-white text-3xl font-black mt-2 leading-none drop-shadow-md">{specialMeal.name}</h2>
+                                <span className="bg-brand-primary text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
+                                    {selectedSpecialItem.type === 'promo' ? 'Promo' : 'Menú del Día'}
+                                </span>
+                                <h2 className="text-white text-3xl font-black mt-2 leading-none drop-shadow-md">{selectedSpecialItem.name}</h2>
                             </div>
                         </div>
                         <div className="p-6 space-y-6">
-                            <p className="text-gray-600 text-sm font-medium leading-relaxed">{specialMeal.description}</p>
+                            <p className="text-gray-600 text-sm font-medium leading-relaxed">{selectedSpecialItem.description}</p>
                             <button
                                 onClick={() => {
-                                    handleAddToCart(specialMeal);
-                                    setIsSpecialModalOpen(false);
+                                    handleAddToCart(selectedSpecialItem);
+                                    setSelectedSpecialItem(null);
                                 }}
                                 className="w-full bg-brand-primary text-white p-4 rounded-2xl font-black flex items-center justify-between shadow-lg shadow-orange-200 active:scale-[0.98] transition-all"
                             >
                                 <span className="uppercase tracking-tight text-sm">Añadir al Pedido</span>
-                                <span className="text-xl font-black">${specialMeal.price.toLocaleString()}</span>
+                                <span className="text-xl font-black">${selectedSpecialItem.price.toLocaleString()}</span>
                             </button>
                         </div>
                     </div>
