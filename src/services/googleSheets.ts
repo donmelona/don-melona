@@ -35,6 +35,10 @@ export async function fetchProducts(): Promise<Product[]> {
                         const price = parseInt(rawPriceStr, 10);
                         const isValidPrice = !isNaN(price) && price > 0;
 
+                        const rawPromoStr = String(data.Promo || data.promo || '').replace(/[^0-9]/g, '');
+                        const promoPrice = rawPromoStr ? parseInt(rawPromoStr, 10) : undefined;
+                        const isValidPromo = promoPrice !== undefined && !isNaN(promoPrice) && promoPrice > 0;
+
                         const isAvailableInSheet = ['SÍ', 'TRUE', '1'].includes(
                             String(data.Disponibilidad || data.disponibilidad).toUpperCase()
                         );
@@ -50,6 +54,7 @@ export async function fetchProducts(): Promise<Product[]> {
                             name: safeName,
                             description: (data.Descripción || data.descripción || '').trim(),
                             price: price || 0,
+                            promoPrice: isValidPromo ? promoPrice : undefined,
                             category: (data.Categoría || data.categoría || 'OTRO').toUpperCase().replace(/\s+/g, ' ').trim(),
                             image: (data.Imagen || data.imagen || '🍔').trim(),
                             isAvailable: isAvailable

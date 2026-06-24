@@ -60,7 +60,11 @@ export function MenuPage() {
                 fetchSpecialMeal()
             ]);
 
-            setProducts(data.filter(p => p.isAvailable));
+            setProducts(data.filter(p => p.isAvailable).sort((a, b) => {
+                if (a.promoPrice && !b.promoPrice) return -1;
+                if (!a.promoPrice && b.promoPrice) return 1;
+                return 0;
+            }));
             setSpecialMeals(meals);
             setLoading(false);
         }

@@ -42,7 +42,10 @@ export const ProductCard = memo(function ProductCard({ product, onSelect, onAddT
     highlightTimeoutRef.current = setTimeout(() => setIsAddHighlighted(false), ADD_HIGHLIGHT_MS);
   };
   
-  const priceFormatted = product.price ? product.price.toLocaleString() : '0';
+  const hasPromo = product.promoPrice && product.promoPrice > 0;
+  const displayPrice = hasPromo ? product.promoPrice! : product.price;
+  const priceFormatted = displayPrice ? displayPrice.toLocaleString() : '0';
+  const originalPriceFormatted = product.price ? product.price.toLocaleString() : '0';
   const isImageUrl = product.image?.startsWith('http://') || product.image?.startsWith('https://');
   const fallbackIcon = CATEGORY_ICONS[product.category] || CATEGORY_ICONS.OTRO;
 
@@ -80,8 +83,15 @@ export const ProductCard = memo(function ProductCard({ product, onSelect, onAddT
           {product.description}
         </p>
         <div className="mt-2 flex items-center justify-between">
-          <span className="font-black text-brand-primary text-lg">
-            ${priceFormatted}
+          <span className="flex items-center gap-2">
+            {hasPromo && (
+              <span className="text-sm text-brand-text/40 line-through font-black">
+                ${originalPriceFormatted}
+              </span>
+            )}
+            <span className="font-black text-brand-primary text-lg">
+              ${priceFormatted}
+            </span>
           </span>
           <button 
             onClick={handleAddClick}

@@ -13,6 +13,7 @@ export interface Product {
   name: string;
   description: string;
   price: number;
+  promoPrice?: number;
   category: string;
   image?: string;
   isAvailable: boolean;
