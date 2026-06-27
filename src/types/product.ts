@@ -32,6 +32,12 @@ export interface SpecialMeal {
   endDate: Date | null;
 }
 
+export interface Category {
+  id: string;
+  name: string;
+  icon: string;
+}
+
 export interface StoreSchedule {
   dia: string;
   horaInicio: string;

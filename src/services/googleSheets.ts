@@ -1,5 +1,5 @@
 import Papa from 'papaparse';
-import type { Product, SpecialMeal, Ingredient, IngredientCategory, StoreSchedule } from '../types/product';
+import type { Product, SpecialMeal, Ingredient, IngredientCategory, StoreSchedule, Category } from '../types/product';
 
 const SPREADSHEET_ID = import.meta.env.VITE_GOOGLE_SHEETS_ID ?? '';
 
@@ -9,6 +9,7 @@ const sheetUrl = (gid: number) =>
 const CSV_URL = sheetUrl(0);
 const SPECIAL_CSV_URL = sheetUrl(1183394839);
 const INGREDIENTS_CSV_URL = sheetUrl(500777);
+const CATEGORIES_CSV_URL = sheetUrl(976397939);
 const SCHEDULE_CSV_URL = sheetUrl(1757918505);
 
 export async function fetchProducts(): Promise<Product[]> {
@@ -201,6 +202,52 @@ export async function fetchIngredients(): Promise<Ingredient[]> {
         });
     } catch (error) {
         console.error('Error:', error);
+        return [];
+    }
+}
+
+export async function fetchCategories(): Promise<Category[]> {
+    try {
+        const response = await fetch(CATEGORIES_CSV_URL);
+        if (!response.ok) throw new Error('Error al conectar con la hoja de categorías');
+
+        const csvText = await response.text();
+
+        return new Promise((resolve, reject) => {
+            Papa.parse(csvText, {
+                header: true,
+                skipEmptyLines: true,
+                complete: (results: Papa.ParseResult<any>) => {
+                    const rawData = results.data as any[];
+
+                    const categories = rawData.map((data: any, index: number) => {
+                        const rawName = (data.Nombre || data.nombre || '').trim();
+                        const safeName = rawName || `Categoría-${index}`;
+
+                        const normalized = safeName
+                            .normalize("NFD")
+                            .replace(/[\u0300-\u036f]/g, "")
+                            .toUpperCase()
+                            .replace(/[^A-Z0-9\s]/g, '')
+                            .trim()
+                            .replace(/\s+/g, '_');
+
+                        const id = (data.id || data.Id || '').trim() || normalized;
+
+                        return {
+                            id,
+                            name: safeName,
+                            icon: (data.Icono || data.icono || data.icon || '📋').trim(),
+                        };
+                    });
+
+                    resolve(categories);
+                },
+                error: (error: Error) => reject(error)
+            });
+        });
+    } catch (error) {
+        console.error('Error fetching categories:', error);
         return [];
     }
 }

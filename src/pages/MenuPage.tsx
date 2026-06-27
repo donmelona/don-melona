@@ -1,21 +1,14 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { fetchProducts, fetchSpecialMeal } from '../services/googleSheets';
+import { fetchProducts, fetchSpecialMeal, fetchCategories } from '../services/googleSheets';
 import { ProductCard } from '../components/ProductCard';
-import type { Product, SpecialMeal } from '../types/product';
+import type { Product, SpecialMeal, Category } from '../types/product';
 import { ChevronLeft, ChevronRight, X, Utensils } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 
-const CATEGORIES = [
+const DEFAULT_CATEGORIES: Category[] = [
     { id: 'TODOS', name: 'Todos', icon: '📋' },
-    { id: 'PICADAS', name: 'Picadas', icon: '🥘' },
-    { id: 'CARNES', name: 'Carnes', icon: '🍖' },
-    { id: 'BURROS', name: 'Burros', icon: '🌯' },
-    { id: 'HAMBURGUESAS', name: 'Hamburguesas', icon: '🍔' },
-    { id: 'PAPAS', name: 'Papas', icon: '🍟' },
-    { id: 'PERROS', name: 'Perros', icon: '🌭' },
-    { id: 'BEBIDAS', name: 'Bebidas', icon: '🥤' }
 ];
 
 export function MenuPage() {
@@ -24,6 +17,7 @@ export function MenuPage() {
 
     const [products, setProducts] = useState<Product[]>([]);
     const [specialMeals, setSpecialMeals] = useState<SpecialMeal[]>([]);
+    const [categories, setCategories] = useState<Category[]>(DEFAULT_CATEGORIES);
     const [loading, setLoading] = useState(true);
     const [activeCategory, setActiveCategory] = useState('TODOS');
 
@@ -55,9 +49,10 @@ export function MenuPage() {
 
     useEffect(() => {
         async function loadData() {
-            const [data, meals] = await Promise.all([
+            const [data, meals, cats] = await Promise.all([
                 fetchProducts(),
-                fetchSpecialMeal()
+                fetchSpecialMeal(),
+                fetchCategories()
             ]);
 
             setProducts(data.filter(p => p.isAvailable).sort((a, b) => {
@@ -66,6 +61,11 @@ export function MenuPage() {
                 return 0;
             }));
             setSpecialMeals(meals);
+
+            if (cats.length > 0) {
+                setCategories([...DEFAULT_CATEGORIES, ...cats]);
+            }
+
             setLoading(false);
         }
         loadData();
@@ -144,7 +144,7 @@ export function MenuPage() {
                 </button>
 
                 <div ref={scrollRef} className="flex gap-2 overflow-x-auto no-scrollbar pb-2 pt-1 pl-1 scroll-smooth w-full">
-                    {CATEGORIES.map((cat) => (
+                    {categories.map((cat) => (
                         <button
                             key={cat.id}
                             onClick={() => setActiveCategory(cat.id)}
