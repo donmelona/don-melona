@@ -1,5 +1,5 @@
 import Papa from 'papaparse';
-import type { Product, SpecialMeal, Ingredient, IngredientCategory, StoreSchedule, Category } from '../types/product';
+import type { Product, SpecialMeal, Ingredient, IngredientCategory, StoreSchedule, Category, SpecialMealType } from '../types/product';
 
 const SPREADSHEET_ID = import.meta.env.VITE_GOOGLE_SHEETS_ID ?? '';
 
