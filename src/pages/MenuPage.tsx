@@ -190,19 +190,19 @@ export function MenuPage() {
             {selectedSpecialItem && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={() => setSelectedSpecialItem(null)}></div>
-                    <div className="relative bg-white w-full md:max-w-md rounded-[2rem] overflow-hidden shadow-2xl z-10 animate-in slide-in-from-bottom-8 fade-in duration-300">
+                    <div className="relative bg-white w-full md:max-w-md rounded-[2rem] overflow-hidden shadow-2xl z-10 animate-in slide-in-from-bottom-8 fade-in duration-300 max-h-[90vh]">
                         <button onClick={() => setSelectedSpecialItem(null)} className="absolute top-4 right-4 z-20 bg-black/50 text-white p-2 rounded-full backdrop-blur-md hover:bg-black/70 active:scale-90 transition-all">
                             <X size={20} strokeWidth={3} />
                         </button>
-                        <div className="w-full h-64 bg-gray-100 relative">
+                        <div className="w-full bg-gray-100 relative">
                             {selectedSpecialItem.image ? (
-                                <img src={selectedSpecialItem.image} alt={selectedSpecialItem.name} className="w-full h-full object-cover" />
+                                <img src={selectedSpecialItem.image} alt={selectedSpecialItem.name} className="w-full object-contain max-h-[55vh] md:max-h-[65vh]" />
                             ) : (
-                                <div className="w-full h-full bg-gradient-to-br from-brand-primary to-orange-400 flex items-center justify-center">
+                                <div className="w-full h-48 bg-gradient-to-br from-brand-primary to-orange-400 flex items-center justify-center">
                                     <Utensils size={48} className="text-white/30" />
                                 </div>
                             )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
                             <div className="absolute bottom-4 left-4 right-4">
                                 <span className="bg-brand-primary text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
                                     {selectedSpecialItem.type === 'promo' ? 'Promo' : 'Menú del Día'}
